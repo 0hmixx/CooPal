@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+  <title>CooPal — What should I cook?</title>
+  <meta name="description" content="Recipe and food cost calculator">
+  <meta name="theme-color" content="#0F6292">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CooPal">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-TileColor" content="#0F6292">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== ROOT VARIABLES & BASE ===== */
+    :root {
+      --pp: #000000;
+      --pp-dark: #1a2c3e;
+      --ac: #0F6292;
+      --ac-light: #16FF00;
+      --btn-bg: #FFED00;
+      --btn-text: #000000;
+      --success: #16FF00;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --border: #dfe6e9;
+      --muted: #6c757d;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --transition: .2s ease;
+      --shadow: 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --nav-height: 60px;
+      --fs-xs: 0.7rem;
+      --fs-sm: 0.8rem;
+      --fs-base: 0.95rem;
+      --fs-lg: 1.1rem;
+      --fs-xl: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --pp: #e0e0e0;
+      --pp-dark: #b0b0b0;
+      --ac: #0F6292;
+      --ac-light: #16FF00;
+      --success: #16FF00;
+      --warning: #FFED00;
+      --danger: #ef5350;
+      --bg: #121212;
+      --card: #1e1e1e;
+      --border: #333333;
+      --muted: #999999;
+      --shadow: 0 1px 2px rgba(0,0,0,.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.5);
+      --btn-bg: #FFED00;
+      --btn-text: #000000;
+    }
+
+    [data-theme="dark"] input[type="text"],
+    [data-theme="dark"] input[type="number"],
+    [data-theme="dark"] input[type="date"],
+    [data-theme="dark"] select,
+    [data-theme="dark"] textarea {
+      background: #2a2a2a;
+      color: #e0e0e0;
+      border-color: #444;
+    }
+
+    [data-theme="dark"] input:focus,
+    [data-theme="dark"] select:focus,
+    [data-theme="dark"] textarea:focus {
+      border-color: var(--ac);
+      box-shadow: 0 0 0 3px rgba(83, 210, 220, 0.2);
+    }
+
+    [data-theme="dark"] .app-header { background: #1e1e1e; }
+    [data-theme="dark"] .bottom-nav { background: #1e1e1e; }
+    [data-theme="dark"] .toast { background: #2a2a2a; color: #e0e0e0; }
+    [data-theme="dark"] .alert-info { background: #1a3a4a; color: #b0d4e8; border-color: #2a5a7a; }
+    [data-theme="dark"] .alert-success { background: #1a3a2a; color: #a0d8b4; border-color: #2a5a3a; }
+    [data-theme="dark"] .alert-warning { background: #3a2a1a; color: #e8c888; border-color: #5a4a2a; }
+    [data-theme="dark"] .alert-danger { background: #3a1a1a; color: #e8a0a0; border-color: #5a2a2a; }
+    [data-theme="dark"] tr:hover { background: #2a2a2a; }
+    [data-theme="dark"] .btn-secondary { background: #2a2a2a; color: #e0e0e0; border-color: #444; }
+    [data-theme="dark"] .btn-secondary:hover { background: #333; }
+    [data-theme="dark"] .stat-card { border-top-color: rgba(255,255,255,0.08); }
+    [data-theme="dark"] .icon-tint-bg { background: rgba(15, 98, 146, 0.25); }
+    [data-theme="dark"] .empty-state .icon { background: rgba(15, 98, 146, 0.12); }
+
+    *,
+    *::before,
+    *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: var(--pp);
+      line-height: 1.5;
+      min-height: 100%;
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+    }
+
+    a { color: inherit; text-decoration: none; -webkit-touch-callout: none; }
+
+    /* ===== LAYOUT ===== */
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    /* Header */
+    .app-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      padding-top: calc(0.75rem + var(--safe-top));
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .app-header h1 {
+      font-size: var(--fs-lg);
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-toggle {
+      margin-left: auto;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      flex-shrink: 0;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .theme-toggle:hover { border-color: var(--ac); }
+    .theme-toggle:active { transform: scale(0.9); }
+
+    [data-theme="dark"] .theme-toggle {
+      background: #2a2a2a;
+      border-color: #444;
+    }
+
+    [data-theme="dark"] .theme-toggle .icon-sun { color: var(--ac); }
+
+    .theme-toggle .icon-sun,
+    .theme-toggle .icon-moon { width: 18px; height: 18px; }
+
+    :root:not([data-theme="dark"]) .theme-toggle .icon-sun { display: none; }
+    :root:not([data-theme="dark"]) .theme-toggle .icon-moon { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; color: #f5a623; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+    .app-header .logo-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      padding: 1rem;
+      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 1rem);
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+
+    /* Section template */
+    .section { display: none; }
+    .section.active { display: block; animation: fadeIn .3s ease; }
+
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes modalIn { from{opacity:0;transform:translateY(100%)} to{opacity:1;transform:translateY(0)} }
+
+    .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: stretch; }
+    .form-row > .form-group { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+    .form-row > .form-group > label { flex-shrink: 0; }
+    .form-row > .form-group > input,
+    .form-row > .form-group > select,
+    .form-row > .form-group > textarea { margin-top: auto; }
+
+    .page-header { margin-bottom: 1rem; }
+    .page-header h2 { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 0.25rem; }
+    .page-header p { font-size: var(--fs-sm); color: var(--muted); }
+
+    .grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .grid-2 > * { flex: 1 1 calc(50% - 0.75rem); min-width: 0; }
+
+    /* ===== INGREDIENT ROW (responsive) ===== */
+    .ing-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ing-row .ing-name {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .ing-row .ing-controls {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .ing-row .ing-controls input,
+    .ing-row .ing-controls select {
+      flex-shrink: 0;
+    }
+
+    .ing-row .ing-remove {
+      flex-shrink: 0;
+    }
+
+    /* Stack ingredient rows on narrow screens */
+    @media (max-width: 480px) {
+      .ing-row {
+        flex-wrap: wrap;
+      }
+
+      .ing-row .ing-name {
+        width: 100%;
+        flex: none;
+      }
+
+      .ing-row .ing-controls {
+        width: 100%;
+        flex: none;
+      }
+
+      .ing-row .ing-controls input[type="number"] {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+      }
+
+      .ing-row .ing-controls select {
+        flex: 0 0 auto;
+      }
+
+      .ing-row .ing-remove {
+        flex: 0 0 auto;
+      }
+    }
+
+    /* Ingredient row form controls */
+    .ing-name {
+      padding: 0.5rem;
+      font-size: var(--fs-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 40px;
+    }
+
+    .ing-qty {
+      width: 20%;
+      min-width: 56px;
+      padding: 0.5rem;
+      font-size: var(--fs-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 40px;
+      flex-shrink: 0;
+    }
+
+    .ing-unit {
+      width: auto;
+      padding: 0.5rem;
+      font-size: var(--fs-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 40px;
+      flex-shrink: 0;
+    }
+
+    .ing-remove {
+      padding: 0.3rem 0.5rem;
+      font-size: var(--fs-sm);
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      min-width: 40px;
+      min-height: 40px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    /* Small number input for servings/time fields */
+    .num-sm {
+      width: 100%;
+      max-width: 120px;
+    }
+
+    /* Ingredient card — tap to toggle */
+    .ing-card {
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+      overflow: hidden;
+    }
+
+    .ing-card:active { }
+
+    .ing-card .ing-card-default {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ing-card .ing-card-active {
+      display: none;
+    }
+
+    .ing-card.active .ing-card-default {
+      display: none;
+    }
+
+    .ing-card.active .ing-card-active {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ing-card .ing-card-name {
+      font-weight: 600;
+      font-size: var(--fs-base);
+      color: var(--pp);
+      min-width: 0;
+      flex: 1;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .ing-card .ing-card-price {
+      font-weight: 700;
+      font-size: var(--fs-base);
+      color: var(--ac);
+      flex-shrink: 0;
+    }
+
+    .ing-card .ing-card-kebab {
+      display: flex;
+      align-items: center;
+      color: var(--muted);
+      flex-shrink: 0;
+      margin-left: 0.25rem;
+      opacity: 0.5;
+    }
+
+    .ing-card .ing-card-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .ing-card.active {
+      border-color: var(--ac);
+      background: rgba(15, 98, 146, 0.05);
+    }
+
+    [data-theme="dark"] .ing-card.active {
+      background: rgba(83, 210, 220, 0.08);
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: calc(var(--nav-height) + var(--safe-bottom) + 1rem);
+      right: 1rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--ac);
+      color: #fff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      z-index: 200;
+      transition: transform .2s ease, box-shadow .2s ease;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+
+    .fab:active { transform: scale(0.95); }
+    .fab:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+
+    .fab svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .fab[hidden] { display: none; }
+
+    [data-theme="dark"] .fab {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Ripple effect */
+    .ripple-host {
+      position: relative;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(15, 98, 146, 0.2);
+      pointer-events: none;
+      transform: scale(0);
+      animation: rippleExpand .5s ease-out forwards;
+    }
+
+    [data-theme="dark"] .ripple {
+      background: rgba(83, 210, 220, 0.25);
+    }
+
+    @keyframes rippleExpand {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Bottom Navigation — Google Play Style */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: calc(var(--nav-height) + var(--safe-bottom));
+      padding: 0;
+      padding-bottom: var(--safe-bottom);
+      background: #1a1a2e;
+    }
+
+    .bottom-nav-bg { display: none; }
+
+    .bottom-nav a {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      color: #8e8e93;
+      font-size: var(--fs-xs);
+      font-weight: 500;
+      padding: 0.4rem 0;
+      width: 25%;
+      min-height: 48px;
+      -webkit-user-select: none;
+      user-select: none;
+      text-decoration: none;
+      transition: color .25s ease;
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    .bottom-nav a.active {
+      color: #fff;
+    }
+
+    .nav-icon-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 28px;
+      z-index: 1;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      color: currentColor;
+      flex-shrink: 0;
+      transition: transform .25s ease, color .25s ease;
+      z-index: 2;
+      position: relative;
+    }
+
+    .bottom-nav a.active .nav-icon {
+      color: #000;
+      transform: scale(1.08);
+    }
+
+    .nav-icon svg { width: 100%; height: 100%; }
+
+    .nav-label {
+      font-size: var(--fs-xs);
+      line-height: 1;
+      transition: color .25s ease, font-weight .25s ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    .bottom-nav a.active .nav-label {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Small animated pill behind icon */
+    .nav-pill {
+      position: absolute;
+      width: 48px;
+      height: 28px;
+      border-radius: 14px;
+      background: var(--ac);
+      z-index: 0;
+      pointer-events: none;
+      transition: left .28s cubic-bezier(.4,0,.2,1), top .28s cubic-bezier(.4,0,.2,1);
+    }
+
+    [data-theme="dark"] .bottom-nav {
+      background: #1e1e1e;
+    }
+
+    .icon, .emoji {
+      width: 2em; height: 2em;
+      color: currentColor;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+
+    .icon-tint-bg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5em; height: 2.5em;
+      border-radius: 50%;
+      background: rgba(15, 98, 146, 0.18);
+      flex-shrink: 0;
+    }
+
+    .icon-tint-bg svg {
+      width: 1.4em; height: 1.4em;
+    }
+
+    .empty-state .icon {
+      width: 3.5rem; height: 3.5rem;
+      opacity: 0.75;
+      margin: 0 auto 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(15, 98, 146, 0.08);
+      color: var(--ac);
+    }
+
+    .empty-state .icon svg {
+      width: 2rem; height: 2rem;
+    }
+
+    .empty-state .btn {
+      margin-top: 1rem;
+    }
+
+    /* ===== FORMS & INPUTS ===== */
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: var(--pp);
+    }
+
+    .form-group .hint {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.75rem 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: var(--fs-base);
+      font-family: inherit;
+      background: #fff;
+      transition: var(--transition);
+      min-height: 48px;
+      touch-action: manipulation;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--ac);
+      box-shadow: 0 0 0 3px rgba(15, 98, 146, 0.15);
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+    select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: var(--fs-base);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+      min-height: 48px;
+      min-width: 44px;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .btn-primary {
+      background: var(--ac);
+      color: #fff;
+    }
+
+    .btn-primary:hover { filter: brightness(0.95); }
+    .btn-primary:active { }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--pp);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { background: #e9ecef; }
+    .btn-secondary:active { }
+
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+
+    .btn-small { padding: 0.5rem 0.875rem; font-size: var(--fs-sm); min-height: 40px; }
+
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    .btn-plain {
+      background: none;
+      color: var(--muted);
+      border: none;
+      padding: 0.5rem 0.75rem;
+      font-size: var(--fs-sm);
+      min-height: 40px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .btn-plain:hover { color: var(--pp); }
+
+    #cookResultCard .btn-group .btn-small {
+      background: none;
+      border: none;
+      color: var(--muted);
+      box-shadow: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    #cookResultCard .btn-group .btn-small:hover {
+      color: var(--pp);
+      background: none;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .card-header h3 { margin: 0; font-size: var(--fs-base); min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+
+    /* View Toggle */
+    .view-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .view-toggle-btn {
+      padding: 0.3rem 0.7rem;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      border: none;
+      border-radius: calc(var(--radius-sm) - 2px);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .2s, color .2s;
+      line-height: 1;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--card);
+      color: var(--pp);
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    }
+
+    /* Per Recipe groups */
+    .recipe-group {
+      margin-bottom: 1rem;
+    }
+
+    .recipe-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .recipe-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+    }
+
+    .recipe-group-header h4 {
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .recipe-group-header .recipe-cost {
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      color: var(--ac);
+      flex-shrink: 0;
+    }
+
+    .recipe-group .ing-card {
+      margin-bottom: 0.25rem;
+    }
+
+    .recipe-group .ing-card-default {
+      padding: 0.4rem 0.5rem;
+    }
+
+    .recipe-ing-info {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+
+    /* Stats */
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 0.75rem;
+      text-align: center;
+      border-left: 4px solid var(--ac);
+      border-top: 1px solid rgba(255,255,255,0.6);
+      min-width: 0;
+      overflow: visible;
+    }
+
+    .stat-label { font-size: var(--fs-xs); color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; overflow-wrap: normal; word-break: keep-all; white-space: nowrap; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    #cookResultCard .stat-grid .stat-card:first-child {
+      border-left-width: 5px;
+      border-left-color: var(--ac);
+      box-shadow: var(--shadow-md), inset 0 0 0 1px rgba(15, 98, 146, 0.1);
+    }
+
+    .stat-value { font-size: var(--fs-lg); font-weight: 700; color: var(--pp); }
+
+    .stat-sub { font-size: var(--fs-sm); color: var(--muted); margin-top: 0.25rem; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 2rem 1rem; color: var(--muted); }
+
+    /* Alerts */
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      margin-bottom: 1rem;
+      font-size: var(--fs-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .alert-info { background: #d6eaf3; color: var(--pp); border: 1px solid #a3cce0; }
+    .alert-success { background: #d5f5e3; color: var(--success); border: 1px solid #a9dfbf; }
+    .alert-warning { background: #fdebd0; color: var(--warning); border: 1px solid #f5cba7; }
+    .alert-danger { background: #fadbd8; color: var(--danger); border: 1px solid #f5b7b1; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--nav-height) + var(--safe-bottom) + 1rem);
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: transform .3s ease, opacity .3s ease;
+      min-width: 0;
+      max-width: calc(100vw - 2rem);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--danger); }
+
+    .toast .nav-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .toast.success .nav-icon {
+      background: rgba(30, 132, 73, 0.12);
+      color: var(--success);
+    }
+
+    .toast.error .nav-icon {
+      background: rgba(231, 76, 60, 0.12);
+      color: var(--danger);
+    }
+
+    .pp { font-family: "Times New Roman", serif; font-weight: bold; }
+
+    /* ===== MODAL ===== */
+    .modal-open {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+      overscroll-behavior: contain;
+    }
+
+    .modal-overlay > div {
+      background: var(--card);
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      max-height: 90dvh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      animation: modalIn .25s ease;
+      padding-bottom: calc(var(--safe-bottom) + 1rem);
+      position: relative;
+      z-index: 1;
+      scroll-padding-top: 1rem;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== TABLET ===== */
+    @media(min-width:600px) {
+      .main-content { padding: 1.5rem; max-width: 720px; margin: 0 auto; }
+      .bottom-nav { max-width: 480px; margin: 0 auto; border-radius: var(--radius) var(--radius) 0 0; }
+      .stat-value { font-size: var(--fs-xl); }
+      .grid-2 > * { flex: 1 1 calc(50% - 0.75rem); }
+    }
+
+    /* ===== DESKTOP / LANDSCAPE MOBILE ===== */
+    @media(min-width:900px) {
+      .app-header { padding: 0.75rem 2rem; }
+      .main-content { padding: 2rem; max-width: 960px; }
+      .bottom-nav { position: sticky; top: 0; left: auto; right: auto; height: auto; padding: 0; align-items: center; background: var(--card); border-bottom: 1px solid var(--border); border-radius: 0; max-width: none; }
+      .nav-pill { display: none; }
+      .bottom-nav a { flex-direction: row; gap: 0.4rem; padding: 0.6rem 1rem; font-size: var(--fs-sm); width: auto; min-height: auto; pointer-events: auto; color: var(--muted); }
+      .bottom-nav a.active { color: var(--ac); background: rgba(15, 98, 146, 0.08); border-radius: var(--radius-sm); }
+      .nav-icon-wrap { width: auto; height: auto; }
+      .bottom-nav a.active .nav-icon { transform: none; }
+      .main-content { padding-bottom: 2rem; }
+      .fab { bottom: 2rem; }
+    }
+
+    /* ===== WIDE MOBILE / LANDSCAPE ===== */
+    @media(max-height:500px) and (orientation:landscape) {
+      .bottom-nav { height: calc(48px + var(--safe-bottom)); }
+      .bottom-nav a { min-height: 36px; }
+      .bottom-nav .nav-icon { width: 18px; height: 18px; }
+      .nav-icon-wrap { width: 40px; height: 24px; }
+      .nav-pill { width: 40px; height: 24px; border-radius: 12px; }
+      .main-content { padding-bottom: calc(48px + var(--safe-bottom) + 0.5rem); }
+      .fab { bottom: calc(48px + var(--safe-bottom) + 0.75rem); width: 48px; height: 48px; }
+      .fab svg { width: 20px; height: 20px; }
+      .modal-overlay { align-items: stretch; }
+      .modal-overlay > div { max-height: 100vh; max-height: 100dvh; border-radius: 0; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="toast" role="alert" aria-live="polite">
+    <span class="nav-icon" id="toastIcon"></span>
+    <span id="toastMessage">—</span>
+  </div>
+
+  <!-- ===== APP SHELL ===== -->
+  <div class="app">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-icon">
+        <img src="logo.png" alt="CooPal logo" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <h1>CooPal</h1>
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+      <!-- Home Section -->
+      <section class="section active" id="homeSection">
+        <div class="page-header">
+          <h2>Welcome to CooPal</h2>
+          <p>Let us help you decide what to cook based on what you have and how much it costs.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><span class="icon-tint-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></span> What Should I Cook?</h3>
+          </div>
+          <div class="form-group">
+            <label>Budget (₱, optional)</label>
+            <input type="number" id="cookBudget" min="0" step="0.01" placeholder="e.g. 200" inputmode="decimal" autocomplete="off">
+            <div class="hint">Maximum total cost for the servings below</div>
+          </div>
+          <div class="form-group">
+            <label>Number of Servings (optional)</label>
+            <input type="number" id="cookServings" min="1" step="1" placeholder="e.g. 4" inputmode="numeric" autocomplete="off">
+            <div class="hint">Leave blank to use each recipe's default servings</div>
+          </div>
+          <div class="form-group">
+            <label>Category (optional)</label>
+            <select id="cookCategory">
+              <option value="">Any category</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Maximum Cooking Time (minutes, optional)</label>
+            <input type="number" id="cookMaxTime" min="0" step="1" placeholder="e.g. 30" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="findRecipeSuggestion()"><svg class="emoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Find a Recipe</button>
+          </div>
+        </div>
+
+        <div id="cookResult"></div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Quick Stats</h3>
+          </div>
+          <div class="stat-grid" id="homeStats">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><span class="icon-tint-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span> Data Backup</h3>
+          </div>
+          <p style="font-size:var(--fs-sm);color:var(--muted);margin-bottom:0.75rem">Export your recipes, ingredients, and expenses to a file, or import a previous backup.</p>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button type="button" class="btn btn-secondary" onclick="exportData()"><svg class="emoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('importFile').click()"><svg class="emoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+          </div>
+        </div>
+
+        <div class="alert alert-info" id="homeWelcomeMsg">
+          Add ingredients first to see stats.
+        </div>
+      </section>
+
+      <!-- Recipes Section -->
+      <section class="section" id="recipesSection">
+        <div class="page-header">
+          <h2>My Recipes</h2>
+          <p>Recipes you've created with cost breakdown.</p>
+          <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border)">
+            <input type="text" id="recipeSearch" placeholder="Search recipes..." inputmode="text" autocomplete="off" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:var(--fs-base);min-height:48px">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Your Recipes</h3>
+          </div>
+          <div id="recipesList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <button type="button" class="fab" id="fabRecipes" onclick="showAddRecipeForm()" aria-label="Add Recipe"><svg viewBox="0 0 24 24" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </section>
+
+      <!-- Ingredients Section -->
+      <section class="section" id="ingredientsSection">
+        <div class="page-header">
+          <h2>Ingredient Prices</h2>
+          <p>Maintain your ingredient price database.</p>
+          <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border)">
+            <input type="text" id="ingredientSearch" placeholder="Search ingredients..." inputmode="text" autocomplete="off" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:var(--fs-base);min-height:48px">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Ingredient Database</h3>
+            <div class="view-toggle" id="ingredientViewToggle">
+              <button type="button" class="view-toggle-btn active" data-view="all" onclick="switchIngredientView('all')">All</button>
+              <button type="button" class="view-toggle-btn" data-view="recipe" onclick="switchIngredientView('recipe')">Per Recipe</button>
+            </div>
+          </div>
+          <div id="ingredientsList"></div>
+          <div id="ingredientsByRecipe" style="display:none"></div>
+        </div>
+        <button type="button" class="fab" id="fabIngredients" onclick="showAddIngredientForm()" aria-label="Add Ingredient"><svg viewBox="0 0 24 24" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </section>
+
+      <!-- Expenses Section -->
+      <section class="section" id="expensesSection">
+        <div class="page-header">
+          <h2>Expenses</h2>
+          <p>Record actual food spending.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Spending Summary</h3>
+          </div>
+          <div id="expenseStats" class="stat-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Spending Log</h3>
+          </div>
+          <div id="expensesList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <button type="button" class="fab" id="fabExpenses" onclick="showAddExpenseForm()" aria-label="Record Expense"><svg viewBox="0 0 24 24" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <div class="nav-pill" id="navPill"></div>
+      <a class="active" data-section="home" href="javascript:void(0)">
+        <span class="nav-icon-wrap"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg></span></span>
+        <span class="nav-label">Home</span>
+      </a>
+      <a data-section="recipes" href="javascript:void(0)">
+        <span class="nav-icon-wrap"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span></span>
+        <span class="nav-label">Recipes</span>
+      </a>
+      <a data-section="ingredients" href="javascript:void(0)">
+        <span class="nav-icon-wrap"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span></span>
+        <span class="nav-label">Ingredients</span>
+      </a>
+      <a data-section="expenses" href="javascript:void(0)">
+        <span class="nav-icon-wrap"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span></span>
+        <span class="nav-label">Expenses</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- ===== JASTORE & APP STATE ===== -->
+  <script>
+    /* ================================================================
+       THEME (Day / Night)
+       ================================================================ */
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      applyTheme(next);
+      localStorage.setItem('cooPalTheme', next);
+    }
+
+    function exportData() {
+      const data = Store.get('all');
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = 'coopal-backup-' + date + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Data exported successfully', 'success');
+    }
+
+    let pendingImport = null;
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.ingredients && !imported.recipes && !imported.expenses) {
+            showToast('Invalid backup file', 'error');
+            return;
+          }
+          pendingImport = imported;
+          showImportConfirm(imported);
+        } catch (err) {
+          console.error('Import error', err);
+          showToast('Failed to import — invalid JSON file', 'error');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // Merge two arrays of records by id. Existing items are kept unless the
+    // incoming item shares the same id AND is the same age or newer — nothing
+    // present locally but absent from the import is ever removed.
+    function mergeById(existing, incoming, timeField) {
+      const byId = {};
+      (existing || []).forEach(item => { if (item && item.id) byId[item.id] = item; });
+      (incoming || []).forEach(item => {
+        if (!item || !item.id) return;
+        const current = byId[item.id];
+        if (!current) {
+          byId[item.id] = item;
+          return;
+        }
+        const currentTime = new Date(current[timeField] || current.createdAt || 0).getTime();
+        const incomingTime = new Date(item[timeField] || item.createdAt || 0).getTime();
+        if (incomingTime >= currentTime) byId[item.id] = item;
+      });
+      return Object.values(byId);
+    }
+
+    function showImportConfirm(imported) {
+      const newIngCount = (imported.ingredients || []).length;
+      const newRecCount = (imported.recipes || []).length;
+      const newExpCount = (imported.expenses || []).length;
+      const html = `
+        <div class="card" style="max-width:420px;margin:0 auto">
+          <div class="card-header"><h3>Merge Backup?</h3></div>
+          <p style="font-size:var(--fs-sm);color:var(--muted);margin-bottom:0.75rem">
+            This backup has ${newRecCount} recipe(s), ${newIngCount} ingredient(s), and 
+            ${newExpCount} expense(s). They'll be merged into your current data — items 
+            with the same ID will only be updated if the backup version is newer. 
+            Nothing existing will be deleted.
+          </p>
+          <div class="btn-group" style="justify-content:flex-end">
+            <button type="button" class="btn btn-secondary" onclick="cancelImportMerge()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmImportMerge()">Merge</button>
+          </div>
+        </div>
+      `;
+      showModal(html);
+    }
+
+    function confirmImportMerge() {
+      if (!pendingImport) return;
+      const current = Store.get('all');
+      const mergedData = {
+        ingredients: mergeById(current.ingredients, pendingImport.ingredients, 'updatedAt'),
+        recipes: mergeById(current.recipes, pendingImport.recipes, 'updatedAt'),
+        expenses: mergeById(current.expenses, pendingImport.expenses, 'createdAt'),
+        settings: { ...current.settings, ...(pendingImport.settings || {}) }
+      };
+      Store._data = mergedData;
+      Store.save();
+      renderIngredients();
+      renderRecipes();
+      renderExpenses();
+      renderHomeStats();
+      const modal = document.getElementById('modal');
+      if (modal) modal.remove();
+      showToast('Backup merged — ' + mergedData.recipes.length + ' recipes, ' + mergedData.ingredients.length + ' ingredients, ' + mergedData.expenses.length + ' expenses total', 'success');
+      pendingImport = null;
+    }
+
+    function cancelImportMerge() {
+      pendingImport = null;
+      const modal = document.getElementById('modal');
+      if (modal) modal.remove();
+      showToast('Import cancelled');
+    }
+
+    // Apply saved theme immediately (before DOMContentLoaded to prevent flash)
+    (function() {
+      const saved = localStorage.getItem('cooPalTheme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (!saved) {
+        // Respect system preference on first visit
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('cooPalTheme', 'dark');
+        }
+      }
+    })();
+
+    /* ================================================================
+       STORAGE / DATA LAYER (Centralized — one source of truth)
+       ================================================================ */
+    const Store = {
+      _key: 'cooPalData',
+
+      _defaultData: {
+        ingredients: [],
+        recipes: [],
+        expenses: [],
+        settings: { currency: '₱' }
+      },
+
+      init() {
+        try {
+          const raw = localStorage.getItem(this._key);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            // Merge defaults so missing keys always exist
+            this._data = { ...this._defaultData, ...parsed };
+          } else {
+            this._data = JSON.parse(JSON.stringify(this._defaultData));
+            this.save();
+          }
+        } catch (e) {
+          console.warn('Store init error, resetting', e);
+          this._data = JSON.parse(JSON.stringify(this._defaultData));
+          this.save();
+        }
+      },
+
+      save() {
+        try {
+          localStorage.setItem(this._key, JSON.stringify(this._data));
+        } catch (e) { console.error('Save error', e); }
+      },
+
+      get(key) {
+        if (key === 'all') return this._data;
+        if (key in this._data) return this._data[key];
+        return undefined;
+      },
+
+      set(path, val) {
+        const parts = path.split('.');
+        let obj = this._data;
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (!obj[parts[i]]) obj[parts[i]] = {};
+          obj = obj[parts[i]];
+        }
+        obj[parts[parts.length - 1]] = val;
+        this.save();
+      },
+
+      // Ingredient methods
+      ingredient(id) {
+        return this._data.ingredients.find(i => i.id === id) || null;
+      },
+
+      ingredients() { return [...this._data.ingredients]; },
+
+      addIngredient(ing) {
+        const exists = this._data.ingredients.find(i => i.name.toLowerCase() === ing.name.toLowerCase());
+        if (exists) {
+          showToast('Ingredient already exists', 'error');
+          return false;
+        }
+        const item = { ...ing, id: Date.now().toString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+        this._data.ingredients.push(item);
+        this.save();
+        renderIngredients();
+        renderHomeStats();
+        showToast('Ingredient added');
+        return true;
+      },
+
+      updateIngredient(id, data) {
+        const ing = this._data.ingredients.find(i => i.id === id);
+        if (!ing) return false;
+        if (data.name) {
+          const exists = this._data.ingredients.find(i => i.id !== id && i.name.toLowerCase() === data.name.toLowerCase());
+          if (exists) {
+            showToast('Ingredient already exists', 'error');
+            return false;
+          }
+        }
+        Object.assign(ing, data, { updatedAt: new Date().toISOString() });
+        this.save();
+        renderIngredients();
+        renderHomeStats();
+        showToast('Ingredient updated');
+        return true;
+      },
+
+      removeIngredient(id) {
+        this._data.ingredients = this._data.ingredients.filter(i => i.id !== id);
+        // Remove from recipes that reference it
+        this._data.recipes = this._data.recipes.map(r => {
+          r.ingredients = r.ingredients.filter(i => i.ingredientId !== id);
+          return r;
+        });
+        this.save();
+        renderIngredients();
+        renderRecipes();
+        renderHomeStats();
+        showToast('Ingredient removed');
+        return true;
+      },
+
+      // Recipe methods
+      recipe(id) {
+        return this._data.recipes.find(r => r.id === id) || null;
+      },
+
+      recipes() { return [...this._data.recipes]; },
+
+      addRecipe(rec) {
+        // Validate ingredients have either a name or valid id
+        const valid = rec.ingredients.every(ing => ing.ingredientName || (ing.ingredientId && this.ingredient(ing.ingredientId)));
+        if (!valid) {
+          showToast('Some ingredients are missing names', 'error');
+          return false;
+        }
+        const item = { ...rec, id: Date.now().toString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+        this._data.recipes.push(item);
+        this.save();
+        renderRecipes();
+        renderHomeStats();
+        showToast('Recipe added');
+        return true;
+      },
+
+      removeRecipe(id) {
+        this._data.recipes = this._data.recipes.filter(r => r.id !== id);
+        // Remove expenses that reference this recipe
+        this._data.expenses = this._data.expenses.filter(e => e.recipeId !== id);
+        this.save();
+        renderRecipes();
+        renderExpenses();
+        renderHomeStats();
+        showToast('Recipe removed');
+        return true;
+      },
+
+      updateRecipe(id, data) {
+        const rec = this.recipe(id);
+        if (!rec) return false;
+        rec.name = data.name;
+        rec.description = data.description;
+        rec.category = data.category;
+        rec.servings = data.servings;
+        rec.cookingTime = data.cookingTime;
+        rec.ingredients = data.ingredients;
+        rec.updatedAt = new Date().toISOString();
+        this.save();
+        renderRecipes();
+        renderExpenses();
+        renderHomeStats();
+        showToast('Recipe updated');
+        return true;
+      },
+
+      // Expense methods
+      expense(id) {
+        return this._data.expenses.find(e => e.id === id) || null;
+      },
+
+      expenses() { return [...this._data.expenses]; },
+
+      addExpense(exp) {
+        const item = { ...exp, id: Date.now().toString(), date: exp.date || new Date().toISOString().slice(0, 10), createdAt: new Date().toISOString() };
+        this._data.expenses.push(item);
+        this.save();
+        renderExpenses();
+        renderHomeStats();
+        showToast('Expense recorded');
+        return true;
+      },
+
+      removeExpense(id) {
+        this._data.expenses = this._data.expenses.filter(e => e.id !== id);
+        this.save();
+        renderExpenses();
+        renderHomeStats();
+        showToast('Expense removed');
+        return true;
+      },
+
+      // Cost calculation helpers
+      calculateRecipeCost(recipeId) {
+        const recipe = this.recipe(recipeId);
+        if (!recipe || !recipe.ingredients || recipe.ingredients.length === 0) return { total: 0, perServing: 0 };
+
+        let total = 0;
+        for (const ri of recipe.ingredients) {
+          // Try by ID first, then by name match
+          let ing = ri.ingredientId ? this.ingredient(ri.ingredientId) : null;
+          if (!ing && ri.ingredientName) {
+            ing = this._data.ingredients.find(i => i.name.toLowerCase() === ri.ingredientName.toLowerCase()) || null;
+          }
+          if (!ing) continue;
+
+          const qty = parseFloat(ri.quantity) || 0;
+          let pricePerUnit = ing.purchasePrice || 0;
+
+          if (ing.purchaseQuantity && ing.purchaseQuantity > 0) {
+            pricePerUnit = ing.purchasePrice / ing.purchaseQuantity;
+          }
+
+          total += qty * pricePerUnit;
+        }
+
+        const servings = recipe.servings || 1;
+        const perServing = total / servings;
+
+        return { total: Math.round(total * 100) / 100, perServing: Math.round(perServing * 100) / 100 };
+      },
+
+      calculateAllRecipeCosts() {
+        const results = {};
+        for (const r of this.recipes()) {
+          results[r.id] = this.calculateRecipeCost(r.id);
+        }
+        return results;
+      }
+    };
+
+    /* ================================================================
+       UI RENDERING HELPERS
+       ================================================================ */
+    function confirmDelete(btn, action) {
+      if (btn.dataset.confirming === '1') {
+        btn.dataset.confirming = '0';
+        clearTimeout(Number(btn.dataset.timer));
+        action();
+        return;
+      }
+      btn.dataset.confirming = '1';
+      const orig = btn.textContent;
+      btn.dataset.orig = orig;
+      btn.textContent = 'Tap again to delete';
+      btn.dataset.timer = setTimeout(() => {
+        btn.dataset.confirming = '0';
+        btn.textContent = btn.dataset.orig || 'Delete';
+      }, 3000);
+    }
+
+    function toggleIngredientCard(card) {
+      const wasActive = card.classList.contains('active');
+      // Deactivate all cards first
+      document.querySelectorAll('.ing-card.active').forEach(c => c.classList.remove('active'));
+      // Toggle the tapped card
+      if (!wasActive) {
+        card.classList.add('active');
+      }
+    }
+
+    function renderIngredients() {
+      if (currentIngredientView === 'recipe') { renderIngredientsByRecipe(); return; }
+      const list = document.getElementById('ingredientsList');
+      const search = document.getElementById('ingredientSearch')?.value.toLowerCase() || '';
+      const ings = Store.ingredients().filter(ing => ing.name.toLowerCase().includes(search));
+
+      if (ings.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div><p>No ingredients yet. Add one above.</p><button type="button" class="btn btn-secondary" onclick="showAddIngredientForm()">Add Ingredient</button></div>';
+        return;
+      }
+
+      let html = '';
+      ings.forEach(ing => {
+        const pricePerUnit = ing.purchaseQuantity && ing.purchaseQuantity > 0 
+          ? (ing.purchasePrice / ing.purchaseQuantity).toFixed(2) 
+          : '—';
+        html += `
+          <div class="ing-card" data-id="${ing.id}" onclick="toggleIngredientCard(this)">
+            <div class="ing-card-default">
+              <span class="ing-card-name">${ing.name}</span>
+              <span class="ing-card-price">₱${(ing.purchasePrice || 0).toFixed(2)}</span>
+              <span class="ing-card-kebab"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></span>
+            </div>
+            <div class="ing-card-active">
+              <span class="ing-card-name">${ing.name}</span>
+              <div class="ing-card-actions">
+                <button type="button" class="btn btn-small btn-secondary" onclick="event.stopPropagation();editIngredient('${ing.id}')">Edit</button>
+                <button type="button" class="btn btn-small btn-danger" onclick="event.stopPropagation();confirmDelete(this,function(){Store.removeIngredient('${ing.id}')})">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    let currentIngredientView = 'all';
+
+    function switchIngredientView(view) {
+      currentIngredientView = view;
+      document.querySelectorAll('#ingredientViewToggle .view-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+      document.getElementById('ingredientsList').style.display = view === 'all' ? '' : 'none';
+      document.getElementById('ingredientsByRecipe').style.display = view === 'recipe' ? '' : 'none';
+      if (view === 'all') renderIngredients();
+      else renderIngredientsByRecipe();
+    }
+
+    function renderIngredientsByRecipe() {
+      const container = document.getElementById('ingredientsByRecipe');
+      const recipes = Store.recipes();
+      const allIngs = Store.ingredients();
+      const search = document.getElementById('ingredientSearch')?.value.toLowerCase() || '';
+
+      if (recipes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><p>No recipes yet. Add recipes first to see ingredients grouped by recipe.</p></div>';
+        return;
+      }
+
+      let html = '';
+      recipes.forEach(rec => {
+        if (!rec.ingredients || rec.ingredients.length === 0) return;
+
+        const filteredIngs = rec.ingredients.filter(ri => {
+          if (!search) return true;
+          const name = ri.ingredientName || '';
+          return name.toLowerCase().includes(search);
+        });
+        if (filteredIngs.length === 0) return;
+
+        let recipeTotal = 0;
+        let rows = '';
+        filteredIngs.forEach(ri => {
+          let ing = ri.ingredientId ? allIngs.find(i => i.id === ri.ingredientId) : null;
+          if (!ing && ri.ingredientName) {
+            ing = allIngs.find(i => i.name.toLowerCase() === ri.ingredientName.toLowerCase()) || null;
+          }
+          const qty = parseFloat(ri.quantity) || 0;
+          const unit = ri.unit || '';
+          let pricePerUnit = 0;
+          let lineTotal = 0;
+          let ingName = ri.ingredientName || (ing ? ing.name : '(unknown)');
+          if (ing && ing.purchaseQuantity > 0) {
+            pricePerUnit = ing.purchasePrice / ing.purchaseQuantity;
+            lineTotal = qty * pricePerUnit;
+          } else if (ing) {
+            pricePerUnit = ing.purchasePrice || 0;
+            lineTotal = qty * pricePerUnit;
+          }
+          recipeTotal += lineTotal;
+          rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid var(--border);font-size:var(--fs-sm)">
+            <span style="min-width:0;flex:1">${ingName}</span>
+            <span style="color:var(--muted);flex-shrink:0;margin-left:0.5rem">${qty > 0 ? qty : ''} ${unit}</span>
+            <span style="font-weight:600;flex-shrink:0;margin-left:0.75rem">₱${lineTotal.toFixed(2)}</span>
+          </div>`;
+        });
+
+        const servings = rec.servings || 1;
+        html += `<div class="recipe-group">
+          <div class="recipe-group-header">
+            <h4>${rec.name}</h4>
+            <span class="recipe-cost">₱${recipeTotal.toFixed(2)} · ₱${(recipeTotal / servings).toFixed(2)}/serving</span>
+          </div>
+          ${rows}
+        </div>`;
+      });
+
+      if (!html) {
+        container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:var(--fs-sm)">No matching ingredients in any recipe.</div>';
+      } else {
+        container.innerHTML = html;
+      }
+    }
+
+    function renderRecipes() {
+      const list = document.getElementById('recipesList');
+      const search = document.getElementById('recipeSearch')?.value.toLowerCase() || '';
+      const recs = Store.recipes().filter(rec => rec.name.toLowerCase().includes(search));
+      const costs = Store.calculateAllRecipeCosts();
+
+      if (recs.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><p>No recipes yet. Add one above.</p><button type="button" class="btn btn-secondary" onclick="showAddRecipeForm()">Add Recipe</button></div>';
+        return;
+      }
+
+      let html = '';
+      recs.forEach(rec => {
+        const c = costs[rec.id];
+        const last = new Date(rec.updatedAt).toLocaleDateString();
+        html += `
+          <div class="card" style="padding:0.75rem;margin-bottom:0.5rem;background:var(--card)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem">
+              <div style="min-width:0;flex:1">
+                <h4 style="font-size:var(--fs-base);font-weight:600;margin-bottom:0.25rem;overflow-wrap:break-word;word-break:break-word">${rec.name}</h4>
+                <div style="font-size:var(--fs-sm);color:var(--muted);margin-top:0.1rem;overflow-wrap:break-word">${rec.servings || 1} servings${rec.cookingTime ? ' · ' + rec.cookingTime + ' min' : ''} ${rec.description ? '— ' + rec.description : ''}</div>
+              </div>
+              <div style="font-weight:700;color:var(--ac);flex-shrink:0">₱${c.total.toFixed(2)}</div>
+            </div>
+            <div style="margin-top:0.3rem;font-size:var(--fs-sm);color:var(--muted)">
+              Cost/serving: ₱${c.perServing.toFixed(2)} | Edited: ${last}
+            </div>
+            <div style="margin-top:0.25rem;">
+              <button type="button" class="btn btn-small btn-secondary" onclick="editRecipe('${rec.id}')">Edit</button>
+              <button type="button" class="btn btn-small btn-danger" onclick="confirmDelete(this,function(){Store.removeRecipe('${rec.id}')})">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+      populateCookCategories();
+    }
+
+    function parseExpenseDate(dateStr) {
+      if (!dateStr) return new Date();
+      return dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T12:00:00');
+    }
+
+    function getWeekStart(d) {
+      const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const day = date.getDay(); // 0=Sun, 1=Mon, ...
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      date.setDate(date.getDate() + diffToMonday);
+      return date;
+    }
+
+    function renderExpenseStats() {
+      const container = document.getElementById('expenseStats');
+      if (!container) return;
+
+      const exp = Store.expenses();
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekStart = getWeekStart(now);
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      let todayTotal = 0, weekTotal = 0, monthTotal = 0;
+      exp.forEach(e => {
+        const d = parseExpenseDate(e.date);
+        const amt = e.actualAmount || 0;
+        if (d >= todayStart) todayTotal += amt;
+        if (d >= weekStart) weekTotal += amt;
+        if (d >= monthStart) monthTotal += amt;
+      });
+
+      container.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Today</div>
+          <div class="stat-value" style="font-size:var(--fs-lg);">₱${todayTotal.toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This Week</div>
+          <div class="stat-value" style="font-size:var(--fs-lg);">₱${weekTotal.toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This Month</div>
+          <div class="stat-value" style="font-size:var(--fs-lg);">₱${monthTotal.toFixed(2)}</div>
+        </div>
+      `;
+    }
+
+    function renderExpenses() {
+      const list = document.getElementById('expensesList');
+      const exp = Store.expenses();
+
+      if (exp.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><p>No expenses recorded yet. Log one above.</p><button type="button" class="btn btn-secondary" onclick="showAddExpenseForm()">Record Expense</button></div>';
+        renderExpenseStats();
+        return;
+      }
+
+      let html = '';
+      exp.sort((a, b) => parseExpenseDate(b.date) - parseExpenseDate(a.date));
+      exp.forEach(e => {
+        const date = parseExpenseDate(e.date).toLocaleDateString();
+        const servings = e.servings || 1;
+        const perServing = servings > 0 ? (e.actualAmount || 0) / servings : 0;
+        html += `
+          <div class="card" style="padding:0.75rem;margin-bottom:0.5rem;background:var(--card)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem">
+              <span style="font-weight:600;color:var(--pp);min-width:0;flex:1;overflow-wrap:break-word;word-break:break-word">${e.recipeName || 'Unknown recipe'}</span>
+              <span style="font-size:var(--fs-xs);color:var(--muted);flex-shrink:0">${date}</span>
+            </div>
+            <div style="margin-top:0.25rem;font-weight:700;color:var(--ac);">₱${(e.actualAmount || 0).toFixed(2)}</div>
+            <div style="font-size:var(--fs-xs);color:var(--muted);margin-top:0.1rem">${servings} serving${servings === 1 ? '' : 's'} · ₱${perServing.toFixed(2)} / serving${e.notes ? ' — ' + e.notes : ''}</div>
+            <div style="margin-top:0.4rem;">
+              <button type="button" class="btn btn-small btn-danger" onclick="confirmDelete(this,function(){Store.removeExpense('${e.id}')})">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+      renderExpenseStats();
+    }
+
+    /* ================================================================
+       "WHAT SHOULD I COOK?" RECOMMENDER
+       ================================================================ */
+    let cookMatches = [];
+    let cookShownIndices = [];
+    let cookServingsNum = null;
+
+    function populateCookCategories() {
+      const sel = document.getElementById('cookCategory');
+      if (!sel) return;
+      const current = sel.value;
+      const cats = [...new Set(Store.recipes().map(r => r.category).filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">Any category</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (cats.includes(current)) sel.value = current;
+    }
+
+    function findRecipeSuggestion() {
+      const budgetVal = gv('cookBudget');
+      const budgetNum = budgetVal !== '' ? parseFloat(budgetVal) : null;
+      const servingsVal = gv('cookServings');
+      const servingsNum = servingsVal !== '' ? parseInt(servingsVal, 10) : null;
+      const category = gv('cookCategory');
+      const maxTimeVal = gv('cookMaxTime');
+      const maxTimeNum = maxTimeVal !== '' ? parseFloat(maxTimeVal) : null;
+
+      const matches = Store.recipes().filter(r => {
+        if (category && (r.category || '') !== category) return false;
+
+        if (maxTimeNum !== null) {
+          const t = r.cookingTime;
+          if (t === undefined || t === null || t === '' || Number(t) > maxTimeNum) return false;
+        }
+
+        if (budgetNum !== null) {
+          const c = Store.calculateRecipeCost(r.id);
+          const servings = servingsNum || r.servings || 1;
+          const scaledCost = c.perServing * servings;
+          if (scaledCost > budgetNum) return false;
+        }
+
+        return true;
+      });
+
+      cookMatches = matches;
+      cookShownIndices = [];
+      cookServingsNum = servingsNum;
+
+      if (matches.length === 0) {
+        renderCookNoMatch();
+        return;
+      }
+
+      showNextCookMatch();
+    }
+
+    function showNextCookMatch() {
+      if (cookMatches.length === 0) {
+        renderCookNoMatch();
+        return;
+      }
+      if (cookShownIndices.length >= cookMatches.length) cookShownIndices = [];
+      const available = cookMatches.map((_, i) => i).filter(i => !cookShownIndices.includes(i));
+      const idx = available[Math.floor(Math.random() * available.length)];
+      cookShownIndices.push(idx);
+      renderCookSuggestion(cookMatches[idx], cookServingsNum);
+    }
+
+    function renderCookSuggestion(recipe, servingsNum) {
+      const c = Store.calculateRecipeCost(recipe.id);
+      const baseServings = recipe.servings || 1;
+      const servings = servingsNum || baseServings;
+      const totalCost = Math.round(c.perServing * servings * 100) / 100;
+      const timeLabel = (recipe.cookingTime !== undefined && recipe.cookingTime !== null && recipe.cookingTime !== '')
+        ? `${recipe.cookingTime} min` : 'Not specified';
+
+      const html = `
+        <div class="card" id="cookResultCard">
+          <div class="card-header">
+            <h3>${recipe.name}</h3>
+            ${recipe.category ? `<span style="font-size:var(--fs-xs);color:var(--muted)">${recipe.category}</span>` : ''}
+          </div>
+          ${recipe.description ? `<p style="font-size:var(--fs-sm);color:var(--muted);margin-bottom:0.75rem;overflow-wrap:break-word">${recipe.description}</p>` : ''}
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Cost</div>
+              <div class="stat-value" style="font-size:var(--fs-lg);">₱${totalCost.toFixed(2)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Cost / Serving</div>
+              <div class="stat-value" style="font-size:var(--fs-lg);">₱${c.perServing.toFixed(2)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Servings</div>
+              <div class="stat-value" style="font-size:var(--fs-lg);">${servings}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Cooking Time</div>
+              <div class="stat-value" style="font-size:var(--fs-lg);">${timeLabel}</div>
+            </div>
+          </div>
+          <div class="btn-group" style="margin-top:1rem;">
+            <button type="button" class="btn btn-secondary" onclick="showNextCookMatch()"><svg class="emoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Try Another</button>
+            <button type="button" class="btn btn-small btn-secondary" onclick="navigateTo('recipes')">View All Recipes</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('cookResult').innerHTML = html;
+    }
+
+    function renderCookNoMatch() {
+      document.getElementById('cookResult').innerHTML = `
+        <div class="alert alert-warning">
+          No recipes match the selected filters. Try adjusting your budget, servings, category, or maximum cooking time.
+        </div>
+      `;
+    }
+
+    const _toastQueue = [];
+    let _toastProcessing = false;
+
+    function _processToastQueue() {
+      if (_toastProcessing || _toastQueue.length === 0) return;
+      _toastProcessing = true;
+
+      const { message, type } = _toastQueue.shift();
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+
+      msg.textContent = message;
+      toast.className = 'toast ' + (type === 'success' ? 'success' : 'error');
+      icon.textContent = type === 'success' ? '✓' : '!';
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          _toastProcessing = false;
+          _processToastQueue();
+        }, 300);
+      }, 4000);
+    }
+
+    function showToast(message, type = 'success') {
+      _toastQueue.push({ message, type });
+      _processToastQueue();
+    }
+
+    /* ================================================================
+       FORM HANDLERS
+       ================================================================ */
+    function gv(id) { return document.getElementById(id).value; }
+    function gn(id) { return Number(document.getElementById(id).value) || 0; }
+
+    // ---- Ingredient Form ----
+    function showAddIngredientForm(isEdit = false, ingId = '') {
+      let ing = null;
+      if (isEdit && ingId) {
+        ing = Store.ingredient(ingId);
+      }
+
+      const ingName = ing ? ing.name : '';
+      const ingCategory = ing ? ing.category : '';
+      const ingUnit = ing ? ing.purchaseUnit : 'pcs';
+      const ingQty = ing ? ing.purchaseQuantity : '';
+      const ingPrice = ing ? ing.purchasePrice : '';
+
+      const html = `
+        <div class="card" style="max-width:400px;margin:0 auto">
+          <div class="card-header">
+            <h3>${isEdit ? 'Edit Ingredient' : 'Add Ingredient'}</h3>
+          </div>
+          <div class="form-group">
+            <label>Ingredient Name</label>
+            <input type="text" id="ingName" value="${ingName}" placeholder="e.g. Chicken breast" inputmode="text" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category</label>
+              <input type="text" id="ingCategory" value="${ingCategory}" placeholder="e.g. Meat" inputmode="text" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Purchase Unit</label>
+              <select id="ingUnit">
+                <option value="kg" ${ingUnit === 'kg' ? 'selected' : ''}>kg</option>
+                <option value="pcs" ${ingUnit === 'pcs' ? 'selected' : ''}>pcs</option>
+                <option value="litre" ${ingUnit === 'litre' ? 'selected' : ''}>litres</option>
+                <option value="pack" ${ingUnit === 'pack' ? 'selected' : ''}>pack</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Purchase Quantity (per price)</label>
+              <input type="number" id="ingQty" value="${ingQty}" step="0.01" min="0" placeholder="e.g. 1 (for per-pack price)" inputmode="decimal" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Purchase Price (₱)</label>
+              <input type="number" id="ingPrice" step="0.01" min="0" placeholder="e.g. 150" value="${ingPrice}" inputmode="decimal" autocomplete="off">
+            </div>
+          </div>
+          <div class="btn-group" style="justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-primary" onclick="saveIngredient(${isEdit}, '${ingId || ''}')">${isEdit ? 'Save Changes' : 'Save Ingredient'}</button>
+            <button type="button" class="btn btn-secondary" onclick="closeIngredientForm()">Cancel</button>
+          </div>
+        </div>
+      `;
+      showModal(html);
+    }
+
+    function editIngredient(id) {
+      showAddIngredientForm(true, id);
+    }
+
+    function saveIngredient(isEdit = false, ingId = '') {
+      const name = gv('ingName').trim();
+      if (!name) { showToast('Enter ingredient name', 'error'); return; }
+
+      const data = {
+        name: name,
+        category: gv('ingCategory') || '',
+        purchaseUnit: gv('ingUnit') || 'pcs',
+        purchaseQuantity: gn('ingQty'),
+        purchasePrice: gn('ingPrice')
+      };
+
+      if (isEdit && ingId) {
+        Store.updateIngredient(ingId, data);
+      } else {
+        const exists = Store._data.ingredients.find(i => i.name.toLowerCase() === name.toLowerCase());
+        if (exists) {
+          showToast('Ingredient already exists', 'error');
+          return;
+        }
+        Store.addIngredient(data);
+      }
+      closeIngredientForm();
+    }
+
+    function closeIngredientForm() {
+      const m = document.getElementById('modal');
+      if (m) m.remove();
+    }
+
+    // ---- Recipe Form ----
+    function showAddRecipeForm(isEdit = false, recId = '') {
+      let rec = null;
+      if (isEdit && recId) {
+        rec = Store.recipe(recId);
+      }
+
+      const recName = rec ? rec.name : '';
+      const recDesc = rec ? rec.description || '' : '';
+      const recServings = rec ? rec.servings || 1 : 1;
+      const recCategory = rec ? rec.category || '' : '';
+      const recCookTime = rec ? (rec.cookingTime || '') : '';
+
+      // Build ingredient preview with existing recipe ingredients
+      let ingList = '';
+      if (rec && rec.ingredients && rec.ingredients.length > 0) {
+        rec.ingredients.forEach(ri => {
+          const ingName = ri.ingredientName || (Store.ingredient(ri.ingredientId) || {}).name || '';
+          ingList += `
+            <div class="ing-row">
+              <input type="text" class="ing-name" name="ingName[]" value="${ingName.replace(/"/g, '&quot;')}" placeholder="Ingredient name" autocomplete="off" inputmode="text">
+              <div class="ing-controls">
+                <input type="number" class="ing-qty" name="qty[]" step="0.01" min="0" value="${ri.quantity || 0}" placeholder="qty" inputmode="decimal">
+                <select class="ing-unit" name="unitSelect[]">
+                  <option value="pcs" ${(!ri.unit || ri.unit === 'pcs') ? 'selected' : ''}>pcs</option>
+                  <option value="kg" ${ri.unit === 'kg' ? 'selected' : ''}>kg</option>
+                  <option value="litre" ${ri.unit === 'litre' ? 'selected' : ''}>litres</option>
+                  <option value="pack" ${ri.unit === 'pack' ? 'selected' : ''}>pack</option>
+                  <option value="g" ${ri.unit === 'g' ? 'selected' : ''}>g</option>
+                  <option value="ml" ${ri.unit === 'ml' ? 'selected' : ''}>ml</option>
+                </select>
+                <button type="button" class="ing-remove" onclick="this.closest('.ing-row').remove()">✕</button>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        ingList = '<p style="color:var(--muted)">No ingredients added yet</p>';
+      }
+
+      const html = `
+        <div class="card" style="max-width:520px;margin:0 auto">
+          <div class="card-header">
+            <h3>${isEdit ? 'Edit Recipe' : 'Add Recipe'}</h3>
+          </div>
+          <div class="form-group">
+            <label>Recipe Name</label>
+            <input type="text" id="recName" value="${recName}" placeholder="e.g. Chicken Adobo" inputmode="text" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Category (optional)</label>
+            <input type="text" id="recCategory" value="${recCategory}" placeholder="e.g. Main Course" inputmode="text" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Description (optional)</label>
+            <textarea id="recDesc" rows="2" placeholder="e.g. Filipino classic dish" inputmode="text" autocomplete="off">${recDesc}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Servings</label>
+            <input type="number" id="recServings" min="1" value="${recServings}" class="num-sm" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Cooking Time (minutes, optional)</label>
+            <input type="number" id="recCookTime" min="0" value="${recCookTime}" placeholder="e.g. 30" class="num-sm" inputmode="numeric" autocomplete="off">
+          </div>
+
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+            <h4 style="font-size:var(--fs-sm);font-weight:600;margin-bottom:0.5rem;">Ingredients</h4>
+            <div id="ingPreview">${ingList}</div>
+            <button type="button" class="btn btn-small btn-secondary" onclick="addIngToRecipe()" style="margin-top:0.5rem;">+ Add Ingredient to Recipe</button>
+          </div>
+
+          <div class="btn-group" style="justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-primary" onclick="saveRecipe(${isEdit}, '${recId || ''}')">${isEdit ? 'Save Changes' : 'Save Recipe'}</button>
+            <button type="button" class="btn btn-secondary" onclick="closeRecipeForm()">Cancel</button>
+          </div>
+        </div>
+      `;
+      showModal(html);
+    }
+
+    function addIngToRecipe() {
+      const ingList = document.getElementById('ingPreview');
+      // Remove "no ingredients" placeholder if present
+      const placeholder = ingList.querySelector('p');
+      if (placeholder) placeholder.remove();
+
+      const row = document.createElement('div');
+      row.className = 'ing-row';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.name = 'ingName[]';
+      nameInput.className = 'ing-name';
+      nameInput.placeholder = 'e.g. Chicken breast';
+      nameInput.autocomplete = 'off';
+      nameInput.inputMode = 'text';
+
+      const controls = document.createElement('div');
+      controls.className = 'ing-controls';
+
+      const qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.name = 'qty[]';
+      qtyInput.className = 'ing-qty';
+      qtyInput.step = '0.01';
+      qtyInput.min = '0';
+      qtyInput.placeholder = 'qty';
+      qtyInput.inputMode = 'decimal';
+      qtyInput.autocomplete = 'off';
+
+      const unitSelect = document.createElement('select');
+      unitSelect.name = 'unitSelect[]';
+      unitSelect.className = 'ing-unit';
+      unitSelect.innerHTML = '<option value="pcs">pcs</option><option value="kg">kg</option><option value="litre">litres</option><option value="pack">pack</option><option value="g">g</option><option value="ml">ml</option>';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'ing-remove';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', function() { row.remove(); });
+
+      controls.appendChild(qtyInput);
+      controls.appendChild(unitSelect);
+      controls.appendChild(removeBtn);
+      row.appendChild(nameInput);
+      row.appendChild(controls);
+      ingList.appendChild(row);
+
+      // Use setTimeout so the DOM is settled before focusing — mobile keyboards need this
+      setTimeout(() => {
+        nameInput.focus({ preventScroll: false });
+        nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+
+    function saveRecipe(isEdit = false, recId = '') {
+      const name = gv('recName').trim();
+      if (!name) { showToast('Enter recipe name', 'error'); return; }
+
+      const ingredients = [];
+      const ingNameInputs = document.querySelectorAll('#ingPreview input[name="ingName[]"]');
+      const qtyInputs = document.querySelectorAll('#ingPreview input[name="qty[]"]');
+      const unitSelects = document.querySelectorAll('#ingPreview select[name="unitSelect[]"]');
+
+      ingNameInputs.forEach((nameInput, i) => {
+        const ingName = nameInput.value.trim();
+        if (!ingName) return;
+        const qty = parseFloat(qtyInputs[i].value) || 0;
+        const unit = unitSelects[i] ? unitSelects[i].value : 'pcs';
+        // Try to match to existing ingredient for cost calculation
+        let match = Store.ingredients().find(ig => ig.name.toLowerCase() === ingName.toLowerCase());
+        // Auto-add missing ingredients to the database
+        if (!match) {
+          const newIng = { name: ingName, category: '', purchaseUnit: unit, purchaseQuantity: 0, purchasePrice: 0 };
+          const added = Store.addIngredient(newIng);
+          if (added) {
+            match = Store.ingredients().find(ig => ig.name.toLowerCase() === ingName.toLowerCase());
+            renderIngredients();
+          }
+        }
+        ingredients.push({
+          ingredientId: match ? match.id : null,
+          ingredientName: ingName,
+          quantity: qty,
+          unit: unit
+        });
+      });
+
+      if (ingredients.length === 0) {
+        showToast('Add at least one ingredient', 'error');
+        return;
+      }
+
+      const cookTimeVal = gv('recCookTime');
+
+      const recData = {
+        name: name,
+        description: gv('recDesc') || '',
+        category: gv('recCategory') || '',
+        servings: gn('recServings'),
+        cookingTime: cookTimeVal !== '' ? Number(cookTimeVal) : null,
+        ingredients: ingredients
+      };
+
+      if (isEdit && recId) {
+        Store.updateRecipe(recId, recData);
+      } else {
+        // Validate ingredients have names
+        const valid = recData.ingredients.every(ing => ing.ingredientName);
+        if (!valid) {
+          showToast('Some ingredients are missing names', 'error');
+          return;
+        }
+        Store.addRecipe(recData);
+      }
+      closeRecipeForm();
+    }
+
+    function closeRecipeForm() {
+      const m = document.getElementById('modal');
+      if (m) m.remove();
+    }
+
+    function editRecipe(id) {
+      showAddRecipeForm(true, id);
+    }
+
+    // ---- Expense Form ----
+    function showAddExpenseForm() {
+      const recs = Store.recipes().map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+      const today = new Date().toISOString().slice(0, 10);
+
+      const html = `
+        <div class="card" style="max-width:420px;margin:0 auto">
+          <div class="card-header">
+            <h3>Record Expense</h3>
+          </div>
+          <div class="form-group">
+            <label>Recipe</label>
+            <select id="expRecipe">
+              <option value="">-- Select recipe --</option>
+              ${recs}
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="expDate" value="${today}" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Actual Amount (₱)</label>
+              <input type="number" id="expAmount" step="0.01" min="0" placeholder="e.g. 250" inputmode="decimal" autocomplete="off">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Servings</label>
+            <input type="number" id="expServings" min="1" value="1" class="num-sm" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Notes (optional)</label>
+            <textarea id="expNotes" rows="2" placeholder="e.g. Dinner with family" inputmode="text" autocomplete="off"></textarea>
+          </div>
+          <div class="btn-group" style="justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+            <button type="button" class="btn btn-secondary" onclick="closeExpenseForm()">Cancel</button>
+          </div>
+        </div>
+      `;
+      showModal(html);
+    }
+
+    function saveExpense() {
+      const recipeId = document.getElementById('expRecipe').value;
+      const amount = gn('expAmount');
+      if (!recipeId || amount === 0) { showToast('Fill in recipe and amount', 'error'); return; }
+
+      const recipe = Store.recipe(recipeId);
+      Store.addExpense({
+        recipeId: recipeId,
+        recipeName: recipe ? recipe.name : 'Unknown',
+        actualAmount: amount,
+        servings: gn('expServings'),
+        date: gv('expDate') || undefined,
+        notes: gv('expNotes') || ''
+      });
+
+      closeExpenseForm();
+    }
+
+    function closeExpenseForm() {
+      const m = document.getElementById('modal');
+      if (m) m.remove();
+    }
+
+    /* ================================================================
+       MODAL OVERLAY
+       ================================================================ */
+    function showModal(html) {
+      const modal = document.createElement('div');
+      modal.id = 'modal';
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `<div>${html}</div>`;
+      document.body.appendChild(modal);
+
+      // Lock body scroll while modal is open
+      document.body.classList.add('modal-open');
+
+      // --- Backdrop close (touch + click) ---
+      // Track where touch starts — only close if it starts AND ends on the backdrop
+      let touchBackdrop = false;
+      let touchStartY = 0;
+
+      modal.addEventListener('touchstart', (e) => {
+        // Only treat as backdrop touch if the target IS the overlay itself (not a child)
+        touchBackdrop = (e.target === modal);
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      modal.addEventListener('touchmove', (e) => {
+        // If user moves finger more than 10px, cancel close (they're scrolling)
+        if (touchBackdrop && Math.abs(e.touches[0].clientY - touchStartY) > 10) {
+          touchBackdrop = false;
+        }
+      }, { passive: true });
+
+      modal.addEventListener('touchend', (e) => {
+        if (touchBackdrop) {
+          e.preventDefault();
+          modal.remove();
+        }
+        touchBackdrop = false;
+      });
+
+      // Desktop: only close on direct backdrop click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+
+      // --- Mobile keyboard handling ---
+      const modalContent = modal.querySelector('div');
+
+      // Scroll focused input into view when keyboard opens
+      modalContent.addEventListener('focusin', (e) => {
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+          // Small delay for iOS to finish keyboard animation
+          setTimeout(() => {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 350);
+        }
+      });
+
+      // Handle visual viewport resize (keyboard appearing/disappearing)
+      if (window.visualViewport) {
+        const onResize = () => {
+          const focused = modal.querySelector(':focus');
+          if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA')) {
+            // Reposition modal content to keep focused element visible
+            const viewportHeight = window.visualViewport.height;
+            const offset = window.visualViewport.offsetTop;
+            modalContent.style.maxHeight = viewportHeight + 'px';
+            setTimeout(() => {
+              focused.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
+          } else {
+            modalContent.style.maxHeight = '';
+          }
+        };
+        window.visualViewport.addEventListener('resize', onResize);
+        window.visualViewport.addEventListener('scroll', onResize);
+        modal._onResizeCleanup = () => {
+          window.visualViewport.removeEventListener('resize', onResize);
+          window.visualViewport.removeEventListener('scroll', onResize);
+        };
+      }
+
+      // --- Cleanup when modal is removed ---
+      const cleanup = () => {
+        if (modal._onResizeCleanup) modal._onResizeCleanup();
+        document.body.classList.remove('modal-open');
+      };
+
+      // Observe removal
+      const observer = new MutationObserver(() => {
+        if (!document.getElementById('modal')) {
+          cleanup();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true });
+    }
+
+    /* ================================================================
+       NAVIGATION
+       ================================================================ */
+    function movePill() {
+      const pill = document.getElementById('navPill');
+      const active = document.querySelector('#bottom-nav a.active');
+      if (!pill || !active || window.innerWidth >= 900) { if (pill) pill.style.opacity = '0'; return; }
+      pill.style.opacity = '1';
+      const nav = document.getElementById('bottom-nav');
+      const navRect = nav.getBoundingClientRect();
+      const iconWrap = active.querySelector('.nav-icon-wrap');
+      if (!iconWrap) return;
+      const iconRect = iconWrap.getBoundingClientRect();
+      const left = iconRect.left - navRect.left + (iconRect.width - pill.offsetWidth) / 2;
+      const top = iconRect.top - navRect.top + (iconRect.height - pill.offsetHeight) / 2;
+      pill.style.left = left + 'px';
+      pill.style.top = top + 'px';
+    }
+
+    function navigateTo(sectionId) {
+      const sections = ['home','recipes','ingredients','expenses'];
+      const contentSections = ['homeSection','recipesSection','ingredientsSection','expensesSection'];
+      const navItems = document.querySelectorAll('#bottom-nav a');
+
+      // Hide all sections
+      contentSections.forEach(id => document.getElementById(id).classList.remove('active'));
+      // Show selected
+      document.getElementById('' + sectionId + 'Section').classList.add('active');
+
+      // Update nav
+      navItems.forEach(n => n.classList.remove('active'));
+      const activeNav = document.querySelector(`#bottom-nav a[data-section="${sectionId}"]`);
+      if (activeNav) activeNav.classList.add('active');
+
+      // Show/hide FABs
+      document.getElementById('fabRecipes').hidden = sectionId !== 'recipes';
+      document.getElementById('fabIngredients').hidden = sectionId !== 'ingredients';
+      document.getElementById('fabExpenses').hidden = sectionId !== 'expenses';
+
+      movePill();
+    }
+
+    function renderHomeStats() {
+      const container = document.getElementById('homeStats');
+      if (!container) return;
+
+      const ings = Store.ingredients();
+      const recs = Store.recipes();
+      const exp = Store.expenses();
+      const costs = Store.calculateAllRecipeCosts();
+
+      let totalRecipeCost = 0;
+      let cheapestRecipe = null;
+      let cheapestCost = Infinity;
+      recs.forEach(r => {
+        const c = costs[r.id];
+        if (c && c.total > 0) {
+          totalRecipeCost += c.total;
+          if (c.perServing < cheapestCost) {
+            cheapestCost = c.perServing;
+            cheapestRecipe = r.name;
+          }
+        }
+      });
+
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      let monthExpenses = 0;
+      exp.forEach(e => {
+        const d = parseExpenseDate(e.date);
+        if (d >= monthStart) monthExpenses += (e.actualAmount || 0);
+      });
+
+      container.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Ingredients</div>
+          <div class="stat-value" style="font-size:var(--fs-lg)">${ings.length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Recipes</div>
+          <div class="stat-value" style="font-size:var(--fs-lg)">${recs.length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This Month</div>
+          <div class="stat-value" style="font-size:var(--fs-lg)">₱${monthExpenses.toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cheapest</div>
+          <div class="stat-value" style="font-size:var(--fs-sm)">${cheapestRecipe || '—'}</div>
+          ${cheapestRecipe ? '<div class="stat-sub">₱' + cheapestCost.toFixed(2) + '/serving</div>' : ''}
+        </div>
+      `;
+    }
+
+    // Initialize store and render on load
+    document.addEventListener('DOMContentLoaded', () => {
+      Store.init();
+      renderIngredients();
+      renderRecipes();
+      renderExpenses();
+      renderHomeStats();
+      populateCookCategories();
+
+      // Search input listeners
+      document.getElementById('recipeSearch').addEventListener('input', renderRecipes);
+      document.getElementById('ingredientSearch').addEventListener('input', () => { if (currentIngredientView === 'all') renderIngredients(); else renderIngredientsByRecipe(); });
+
+      // Set active home by default
+      navigateTo('home');
+
+      // Reposition pill on resize
+      window.addEventListener('resize', movePill);
+    });
+
+    // Bottom nav click
+    document.querySelectorAll('#bottom-nav a').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const section = a.dataset.section;
+        navigateTo(section);
+      });
+    });
+
+    /* ================================================================
+       RIPPLE EFFECT
+       ================================================================ */
+    (function() {
+      function createRipple(e, el) {
+        const rect = el.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        const size = Math.max(rect.width, rect.height) * 2;
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = (x - size / 2) + 'px';
+        ripple.style.top = (y - size / 2) + 'px';
+        el.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      }
+
+      function attachRipple(selector) {
+        document.querySelectorAll(selector).forEach(el => {
+          if (el.dataset.rippleAttached) return;
+          el.dataset.rippleAttached = '1';
+          el.classList.add('ripple-host');
+          el.addEventListener('pointerdown', (e) => createRipple(e, el));
+        });
+      }
+
+      // Attach to target elements
+      attachRipple('.btn');
+      attachRipple('.ing-card');
+      attachRipple('.bottom-nav a');
+
+      // Re-attach after navigation (FABs, re-renders). Scoped to #mainContent
+      // (plus the nav, attached separately below) rather than the whole
+      // document body, so ripple spans being added/removed by createRipple()
+      // don't themselves keep re-triggering a full-document re-scan.
+      const observeTarget = document.getElementById('mainContent') || document.body;
+      const observer = new MutationObserver(() => {
+        attachRipple('.btn');
+        attachRipple('.ing-card');
+      });
+      observer.observe(observeTarget, { childList: true, subtree: true });
+
+      const nav = document.getElementById('bottom-nav');
+      if (nav) attachRipple('.bottom-nav a');
+    })();
+
+    /* ================================================================
+       ANDROID BACK BUTTON
+       ================================================================ */
+    (function() {
+      function handleBackButton(e) {
+        // Capacitor's backButton event is a plain {canGoBack} object with no
+        // preventDefault method, unlike Cordova's DOM CustomEvent — guard the
+        // call so it doesn't throw and abort the handler under Capacitor.
+        const safePreventDefault = () => { if (e && typeof e.preventDefault === 'function') e.preventDefault(); };
+
+        // 1. If modal is open, close it
+        const modal = document.getElementById('modal');
+        if (modal) {
+          safePreventDefault();
+          modal.remove();
+          return;
+        }
+        // 2. If not on home, navigate home
+        const activeSection = document.querySelector('.section.active');
+        if (activeSection && activeSection.id !== 'homeSection') {
+          safePreventDefault();
+          navigateTo('home');
+          return;
+        }
+        // 3. At home with nothing open — exit the app.
+        // Registering a backbutton/backButton listener suppresses the platform's
+        // default exit behavior, so it has to be triggered explicitly here.
+        if (window.Capacitor && window.Capacitor.App && window.Capacitor.App.exitApp) {
+          window.Capacitor.App.exitApp();
+        } else if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
+          window.navigator.app.exitApp();
+        }
+      }
+
+      // Capacitor and Cordova back-button events are handled by different
+      // underlying systems and shouldn't both fire in the same build, but the
+      // guard above (checking activeSection/modal state fresh each call) makes
+      // handleBackButton safe to register on both without double side effects.
+      if (window.Capacitor && window.Capacitor.App) {
+        window.Capacitor.App.addListener('backButton', handleBackButton);
+      }
+      document.addEventListener('backbutton', handleBackButton, false);
+    })();
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

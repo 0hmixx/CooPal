@@ -1,0 +1,27 @@
+{
+  "name": "CooPal — Recipe & Food Cost Calculator",
+  "short_name": "CooPal",
+  "description": "Plan meals, track ingredient costs, and manage your food budget.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f9fa",
+  "theme_color": "#0F6292",
+  "lang": "en",
+  "scope": ".",
+  "categories": ["food", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
