@@ -1,0 +1,11 @@
+app/build/
+build/
+.gradle/
+local.properties
+*.apk
+*.aab
+*.keystore
+twa-manifest.json
+manifest-checksum.txt
+gradlew
+gradlew.bat
