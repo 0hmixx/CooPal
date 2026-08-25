@@ -4,7 +4,7 @@
   "name": "CooPal",
   "launcherName": "CooPal",
   "display": "standalone",
-  "themeColor": "#0F6292",
+  "themeColor": "#D4764E",
   "themeColorDark": "#000000",
   "navigationColor": "#000000",
   "navigationColorDark": "#000000",
@@ -20,12 +20,12 @@
     "path": "C:\\Users\\Jan\\Documents\\Default Project\\coopal\\android.keystore",
     "alias": "android"
   },
-  "appVersionName": "1",
-  "appVersionCode": 1,
+  "appVersionName": "2",
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://0hmixx.github.io/CooPal/manifest.json",
-  "fallbackType": "customtabs",
+  "fallbackType": "webview",
   "features": {},
   "alphaDependencies": {
     "enabled": false
@@ -43,5 +43,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "1"
+  "appVersion": "2"
 }
